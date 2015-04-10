@@ -1,0 +1,16 @@
+{
+  "name": "window",
+  "version": "0.0.0",
+  "authors": [
+    "Manuel Araoz <manuelaraoz@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "public/lib",
+    "test",
+    "tests"
+  ]
+}

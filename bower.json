@@ -12,5 +12,8 @@
     "public/lib",
     "test",
     "tests"
-  ]
+  ],
+  "dependencies": {
+    "jsonc": "~1.6.1"
+  }
 }

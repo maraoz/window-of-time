@@ -4,6 +4,8 @@ var _ = require('lodash');
 var express = require('express');
 var Datastore = require('nedb');
 var Promise = require('bluebird');
+var bodyParser = require('body-parser');
+var multer = require('multer');
 var db = Promise.promisifyAll(new Datastore({
   filename: 'db.json',
   autoload: true
@@ -12,13 +14,18 @@ var db = Promise.promisifyAll(new Datastore({
 var app = express();
 
 app.use(express.static('./'));
+app.use(bodyParser.json()); // for parsing application/json
+app.use(bodyParser.urlencoded({
+  extended: true
+})); // for parsing application/x-www-form-urlencoded
+app.use(multer()); // for parsing multipart/form-data
 
 app.get('/api/random', function(req, res) {
   var now = new Date().getTime();
-  var current = [now, 0, 0];
+  var current = [0, 0, 0];
   var size = 50;
   var generateMove = function() {
-    current[0] += 250 + Math.floor(Math.random() * 1000);
+    current[0] += 25 + Math.floor(Math.random() * 100);
     current[1] += -size / 2 + Math.floor(Math.random() * size);
     current[2] += -size / 2 + Math.floor(Math.random() * size);
     return current.slice();
@@ -33,11 +40,18 @@ app.get('/api/random', function(req, res) {
     });
 });
 app.post('/api/write', function(req, res) {
-  console.log(req.body);
-  var doc = JSON.parse(req.body);
+  var doc = req.body;
   db.insertAsync(doc)
-    .then(function(newDoc) {
-      res.send(newDoc);
+    .then(function() {
+      res.send({
+        success: true
+      });
+    })
+    .catch(function(err) {
+      res.send({
+        success: false,
+        reason: err
+      });
     });
 });
 app.get('/api/cursors', function(req, res) {

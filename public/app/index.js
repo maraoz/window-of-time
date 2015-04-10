@@ -22,7 +22,6 @@ $(document).ready(function() {
   var moveImg = function(img, x, y, delta) {
     setTimeout(function() {
       img.css({
-        //position: 'absolute',
         'top': y,
         'left': x
       });
@@ -32,13 +31,19 @@ $(document).ready(function() {
 
   setTimeout(function() {
     console.log('writing moveData', moveData.length);
-    $.post('api/write', {
+    moveData = _.filter(moveData, function(d, i) {
+      return i % 5 === 0;
+    });
+    var data = {
       timestamp: startTime,
       moves: moveData
-    }, function(response) {
+    };
+    console.log(JSON.stringify(data).length);
+    console.log(JSONC.pack(JSONC.compress(data)).length);
+    $.post('api/write', data, function(response) {
       console.log(response);
     });
-  }, 10000);
+  }, 5000);
 
   $('body').keypress(function(e) {
     e.preventDefault();
@@ -49,16 +54,16 @@ $(document).ready(function() {
   });
   $.get('api/cursors', function(data) {
     var cursors = JSON.parse(data);
+    console.log(cursors);
     _.each(cursors, function(cursor) {
       var ts = cursor.timestamp;
       var moves = cursor.moves;
       var img = createMouse();
       _.each(moves, function(move) {
-        var tm = move[0];
-        var x = move[1];
-        var y = move[2];
-        var delta = tm - ts;
-        moveImg(img, midX + x, midY + y, delta / 10);
+        var tm = parseInt(move[0]);
+        var x = midX + parseInt(move[1]);
+        var y = midY + parseInt(move[2]);
+        moveImg(img, x, y, tm);
       });
     });
   });
@@ -69,12 +74,11 @@ $(document).ready(function() {
     var y = e.clientY;
 
     var move = [
-      new Date().getTime(),
+      new Date().getTime() - startTime,
       x - midX,
       y - midY
     ];
     moveData.push(move);
-    console.log('adding', move);
 
     moveImg(mainImg, x - 10, y, 0);
   });

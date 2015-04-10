@@ -13,8 +13,7 @@ var app = express();
 
 app.use(express.static('./'));
 
-app.get('/api/write', function(req, res) {
-
+app.get('/api/random', function(req, res) {
   var now = new Date().getTime();
   var current = [now, 0, 0];
   var size = 50;
@@ -26,14 +25,20 @@ app.get('/api/write', function(req, res) {
   };
   var doc = {
     timestamp: now,
-    moves: _.times(10+Math.floor(Math.random()*100), generateMove)
+    moves: _.times(10 + Math.floor(Math.random() * 100), generateMove)
   };
   db.insertAsync(doc)
     .then(function(newDoc) {
-      console.log(newDoc);
+      res.send(newDoc);
     });
-
-  res.send('wrote!');
+});
+app.post('/api/write', function(req, res) {
+  console.log(req.body);
+  var doc = JSON.parse(req.body);
+  db.insertAsync(doc)
+    .then(function(newDoc) {
+      res.send(newDoc);
+    });
 });
 app.get('/api/cursors', function(req, res) {
   db.find({}).exec(function(err, docs) {

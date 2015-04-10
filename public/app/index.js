@@ -3,7 +3,7 @@
 $(document).ready(function() {
 
   console.log('Initializing...');
-
+  var startTime = new Date().getTime();
   var createMouse = function() {
     var img = $('<img />', {
       id: 'cursor',
@@ -16,7 +16,9 @@ $(document).ready(function() {
     img.appendTo($('body'));
     return img;
   };
-  var imgs = _.times(1, createMouse);
+  var midX = $('body').width() / 2;
+  var midY = $('body').height() / 2;
+  var mainImg = createMouse();
   var moveImg = function(img, x, y, delta) {
     setTimeout(function() {
       img.css({
@@ -26,19 +28,26 @@ $(document).ready(function() {
       });
     }, delta);
   };
+  var moveData = [];
+
+  setTimeout(function() {
+    console.log('writing moveData', moveData.length);
+    $.post('api/write', {
+      timestamp: startTime,
+      moves: moveData
+    }, function(response) {
+      console.log(response);
+    });
+  }, 10000);
 
   $('body').keypress(function(e) {
     e.preventDefault();
     if (e.which === 'q'.charCodeAt(0)) {
-      imgs.push(createMouse());
-    }
-    if (e.which === 'e'.charCodeAt(0)) {
-      imgs.pop();
+      // TODO
+      console.log('Q');
     }
   });
   $.get('api/cursors', function(data) {
-    var midX = $('body').width() / 2;
-    var midY = $('body').height() / 2;
     var cursors = JSON.parse(data);
     _.each(cursors, function(cursor) {
       var ts = cursor.timestamp;
@@ -49,22 +58,25 @@ $(document).ready(function() {
         var x = move[1];
         var y = move[2];
         var delta = tm - ts;
-        moveImg(img, midX + x, midY + y, delta/10);
+        moveImg(img, midX + x, midY + y, delta / 10);
       });
     });
   });
 
 
   $('body').mousemove(function(e) {
-    var msg = 'Handler for .mousemove() called at ';
-    msg += e.pageX + ', ' + e.pageY;
+    var x = e.clientX;
+    var y = e.clientY;
 
-    _.each(imgs, function(img, i) {
-      var delta = 150 * i;
-      var x = e.clientX - 10;
-      var y = e.clientY;
-      moveImg(img, x, y, delta);
-    });
+    var move = [
+      new Date().getTime(),
+      x - midX,
+      y - midY
+    ];
+    moveData.push(move);
+    console.log('adding', move);
+
+    moveImg(mainImg, x - 10, y, 0);
   });
 
 });
